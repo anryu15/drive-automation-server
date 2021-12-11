@@ -6,6 +6,7 @@ except ImportError:
 import time
 from angleCalculator import AngleCalculator
 import config
+import cv2
 
 class WebsocketClient():
 
@@ -43,7 +44,8 @@ class WebsocketClient():
         while True:
             time.sleep(0.1)
             input_data = input("send data:")
-            self.angleCalculator.set_image(config.IMAGE_PATH)
+            img = cv2.imread(config.IMAGE_PATH)
+            self.angleCalculator.set_image(img)
             angle = self.angleCalculator.get_angle()
             self.ws.send(angle)
     
