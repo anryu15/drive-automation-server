@@ -10,6 +10,7 @@ class AngleCalculator():
         self.search_width = search_width
         self.image = None
         self.image_size = None
+        self.rgb_array = None 
         self.image_trans = None
         self.image_bianry = None
 
@@ -34,7 +35,8 @@ class AngleCalculator():
         return self.image_trans
 
     def _get_lines_mid_point(self, y):
-        rows = self.image_trans[y,:,0]
+        # rows = self.image_trans[y,:,0]
+        rows = self.rgb_array[y,:,0]
         w = self.image_trans.shape[1]
         phase = 0
         x1 = 0
@@ -51,7 +53,7 @@ class AngleCalculator():
                 break
         return ((x0 + x1)/2, y)
 
-    # 角度求める(引数：手前の中点、奥の中点)
+    # 角度求める(引数：奥の中点、手前の中点)
     def _calculate_angle(self,p0,p1):
         #3点目は手前の中点から垂直に伸ばした点
         x0, y0 = p0
@@ -60,12 +62,25 @@ class AngleCalculator():
         h = y1 - y0
         theta = math.acos(h/l)
         angle = theta * (180 / math.pi)
+        if x0<x1:
+            # print("--")
+            angle = -1*angle
         return angle
+
+
+    # rgbの色配列を返す関数(引数:画像のパス)
+    def _get_rgb(self):
+        img_gray = cv2.cvtColor(self.image_trans, cv2.COLOR_BGR2RGB) #色配置の変換 BGR→RGB
+        self.rgb_array = np.asarray(img_gray)   #numpyで扱える配列をつくる
+        # cv2.imwrite("GetAngle/output/rgb_Image.png",img_gray)
+        # print(img_array.shape)
+        return self.rgb_array
 
     def get_angle(self):
         assert self.image is not None, "set image first."
         self._change_to_binary()
         self._up()
+        self._get_rgb()
         p0 = self._get_lines_mid_point(self.y0)
         p1 = self._get_lines_mid_point(self.y1)
         angle = self._calculate_angle(p0, p1)
